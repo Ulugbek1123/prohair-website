@@ -62,7 +62,11 @@ jobs:
               echo "🔄 PM2 qayta ishga tushirilmoqda..."
               pm2 restart new-prohair --update-env || pm2 restart all
               sleep 3
-              pm2 logs new-prohair --nostream --lines 50
+              echo "--- LOCAL 5005 TEST ---"
+              curl -s http://127.0.0.1:5005/prohair-2026 | grep "35+" || echo "Not found on 5005"
+              echo "--- NGINX PROXY PASS ---"
+              grep -rn "500" /etc/nginx/ 2>/dev/null || true
+              grep -rn "new.prohair" /etc/nginx/ 2>/dev/null || true
               echo "✅ Serverda yangilanish to'liq va muvaffaqiyatli yakunlandi!"
             else
               echo "❌ Loyiha papkasi serverda topilmadi!"
