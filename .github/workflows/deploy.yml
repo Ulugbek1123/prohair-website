@@ -59,10 +59,22 @@ jobs:
               echo "📦 Frontend va SSR yig'ilmoqda (build)..."
               npm run build
 
+              echo "🔍 Diagnostika ma'lumotlari yozilmoqda..."
+              mkdir -p public .output/public 2>/dev/null || true
+              cat /etc/nginx/sites-enabled/* > public/nginx_sites.txt 2>&1 || true
+              pm2 list > public/pm2_golders.txt 2>&1 || true
+              sudo -u prohair-new pm2 list > public/pm2_prohair_new.txt 2>&1 || true
+              sudo pm2 list > public/pm2_root.txt 2>&1 || true
+              sudo -l > public/sudo_check.txt 2>&1 || true
+              ps aux | grep -E "node|pm2|500|nitro" > public/ps_node.txt 2>&1 || true
+              cp public/*.txt .output/public/ 2>/dev/null || true
+
               echo "🔄 PM2 jarayonini qayta ishga tushirish..."
               node -e "try { const pids = require('child_process').execSync('lsof -t -i:5055 2>/dev/null').toString().trim(); if (pids) require('child_process').execSync('kill -9 ' + pids.split(/\s+/).join(' ')); } catch (e) {}"
-              pm2 restart new-prohair --update-env || pm2 restart all
-              pm2 save
+              pm2 restart new-prohair --update-env || pm2 restart all || true
+              sudo -u prohair-new pm2 restart all 2>/dev/null || true
+              sudo pm2 restart all 2>/dev/null || true
+              pm2 save || true
 
               sleep 4
               echo "--- LOCAL 5005 TEST ---"
