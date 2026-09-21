@@ -22,13 +22,5 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
-            echo "🔍 Server diagnostikasi boshlandi..."
-            echo "Joriy papka: $(pwd)"
-            echo "Mavjud papkalar:"
-            ls -la
             export PATH=$PATH:/home/golders-prohair/.nvm/versions/node/v22.22.3/bin:~/.nvm/versions/node/v22.22.3/bin:~/.nvm/versions/node/$(ls ~/.nvm/versions/node 2>/dev/null | tail -n 1)/bin
-            echo "--- PM2 HOLATI ---"
-            pm2 list || true
-            echo "--- QIDIRUV ---"
-            find ~ -maxdepth 3 -name "server.cjs" 2>/dev/null || true
-            find ~ -maxdepth 3 -name "package.json" 2>/dev/null || true
+            pm2 describe 2
