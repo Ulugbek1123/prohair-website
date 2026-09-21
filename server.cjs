@@ -853,11 +853,35 @@ const NITRO_PORT = process.env.NITRO_PORT || (Number(PORT) === 5000 ? 5055 : (Nu
 const nitroServerEntry = path.join(__dirname, '.output', 'server', 'index.mjs');
 let nitroChild = null;
 
+function killProcessOnPort(port) {
+    try {
+        const { execSync } = require('child_process');
+        if (process.platform === 'linux' || process.platform === 'darwin') {
+            const pids = execSync(`lsof -t -i:${port} 2>/dev/null`).toString().trim();
+            if (pids) {
+                const pidList = pids.split(/\s+/).filter(p => p && p !== String(process.pid));
+                if (pidList.length > 0) {
+                    console.log(`[Nitro SSR] Port ${port} dagi eski jarayonlar to'xtatilmoqda (PID: ${pidList.join(', ')})`);
+                    execSync(`kill -9 ${pidList.join(' ')} 2>/dev/null || true`);
+                }
+            }
+        }
+    } catch (e) {}
+}
+
 function startNitroServer() {
     if (!fs.existsSync(nitroServerEntry)) {
         console.warn('[Nitro SSR] Server fayli hali topilmadi. Avval prohair-new da build qiling.');
         return;
     }
+
+    if (nitroChild) {
+        nitroChild.removeAllListeners('exit');
+        try { nitroChild.kill('SIGKILL'); } catch (e) {}
+        nitroChild = null;
+    }
+    killProcessOnPort(NITRO_PORT);
+
     try {
         nitroChild = fork(nitroServerEntry, [], {
             env: {
@@ -879,18 +903,22 @@ function startNitroServer() {
 }
 
 // Jarayonni toza tugatish
-process.on('exit', () => {
+function cleanExit() {
     if (nitroChild) {
         nitroChild.removeAllListeners('exit');
-        nitroChild.kill();
+        try { nitroChild.kill('SIGKILL'); } catch (e) {}
+        nitroChild = null;
     }
-});
+    killProcessOnPort(NITRO_PORT);
+}
+
+process.on('exit', cleanExit);
 process.on('SIGINT', () => {
-    if (nitroChild) nitroChild.kill();
+    cleanExit();
     process.exit(0);
 });
 process.on('SIGTERM', () => {
-    if (nitroChild) nitroChild.kill();
+    cleanExit();
     process.exit(0);
 });
 
