@@ -30,3 +30,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+*.bak
+*.sqlite.bak
+*.db.bak
+prohair_old.db
+public/*.txt
+public/*.html
+.output/
