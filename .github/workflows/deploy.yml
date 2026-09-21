@@ -71,24 +71,17 @@ jobs:
               ps aux | grep -E "node|pm2|500|nitro" > public/ps_node.txt 2>&1 || true
               cp public/*.txt .output/public/ 2>/dev/null || true
 
-              echo "🔄 Jarayonlarni to'liq qayta ishga tushirish..."
+              echo "🔄 new-prohair jarayonini xavfsiz qayta ishga tushirish..."
               fuser -k 5055/tcp 2>/dev/null || true
               fuser -k 5005/tcp 2>/dev/null || true
               
               sleep 1
-              PM2_HOME=/root/.pm2 pm2 restart 2 2>/dev/null || true
-              PM2_HOME=/root/.pm2 pm2 restart new-prohair 2>/dev/null || true
-              pm2 restart new-prohair 2>/dev/null || true
+              PM2_HOME=/root/.pm2 pm2 restart new-prohair 2>/dev/null || PM2_HOME=/root/.pm2 pm2 restart 2 2>/dev/null || true
               
-              sleep 4
-              echo "🔍 Yangilangan jarayonlar holati:"
-              ps aux | grep -E "node|pm2|500|nitro" > public/ps_node_after.txt 2>&1 || true
-              curl -s http://127.0.0.1:5005/prohair-2026 > public/local_5005.html 2>&1 || true
-              cp public/*.txt public/*.html .output/public/ 2>/dev/null || true
-              
+              sleep 3
               echo "--- LOCAL 5005 TEST ---"
               curl -s http://127.0.0.1:5005/prohair-2026 | grep "35+" || echo "Check complete"
-              echo "✅ Serverda yangilanish to'liq va muvaffaqiyatli yakunlandi!"
+              echo "✅ Faqat new-prohair yangilandi!"
             else
               echo "❌ Loyiha papkasi serverda topilmadi!"
               exit 1
