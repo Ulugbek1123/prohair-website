@@ -21,7 +21,7 @@ function Page() {
   const { t } = useLanguage();
 
   const stats = [
-    ['24+', t('международных спикеров', 'xalqaro spiker', 'international speakers')],
+    ['35+', t('международных спикеров', 'xalqaro spiker', 'international speakers')],
     ['400+', t('врачей и специалистов', 'shifokor va mutaxassis', 'doctors and specialists')],
     ['2', t('дня научной программы', 'kun to‘liq ilmiy dastur', 'days of scientific program')],
     ['8', t('тематических сессий', 'mavzuli sessiya', 'thematic sessions')],

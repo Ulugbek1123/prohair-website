@@ -31,16 +31,18 @@ const COUNTRIES = [
 
 const USD_RATE = 12100;
 
+const fallbackPlan: PricingPlan = pricingPlansData[0] || { id: 1, category: "Standard", title: "Делегат", priceUsd: 150, features: [] };
+
 export function RegistrationModal({ isOpen, onClose, selectedPlan }: RegistrationModalProps) {
   const { t } = useLanguage();
-  const [currentPlanId, setCurrentPlanId] = useState<number>(selectedPlan?.id ?? pricingPlansData[0].id);
+  const [currentPlanId, setCurrentPlanId] = useState<number>(selectedPlan?.id ?? fallbackPlan.id);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   if (!isOpen) return null;
 
-  const activePlan = pricingPlansData.find((p) => p.id === currentPlanId) ?? pricingPlansData[0];
+  const activePlan = pricingPlansData.find((p) => p.id === currentPlanId) || fallbackPlan;
   const priceUzs = activePlan.priceUsd * USD_RATE;
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {

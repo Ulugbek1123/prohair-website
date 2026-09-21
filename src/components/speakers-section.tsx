@@ -1,18 +1,53 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Globe, Search, UserCheck } from "lucide-react";
 import { useLanguage } from "../lib/language";
 import { speakersData, type Speaker } from "../lib/data";
+import { apiUrl } from "../lib/api-client";
 
 export function SpeakersSection() {
   const { t } = useLanguage();
+  const [speakers, setSpeakers] = useState<Speaker[]>(speakersData);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<string>("all");
   const [selectedSpeaker, setSelectedSpeaker] = useState<Speaker | null>(null);
 
-  // Extract unique countries
-  const countries = ["all", ...Array.from(new Set(speakersData.map((s) => s.country).filter(Boolean)))];
+  useEffect(() => {
+    let isMounted = true;
+    fetch(apiUrl("/api/speakers"))
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch speakers");
+        return res.json();
+      })
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          const countryFallbackMap: Record<number, string> = Object.fromEntries(
+            speakersData.map((s) => [s.id, s.country || "Узбекистан"])
+          );
+          const enriched: Speaker[] = data.map((s: any) => ({
+            id: s.id,
+            name: s.name ? s.name.trim() : "",
+            role: s.role || "",
+            image: s.image || "",
+            label: s.label ? s.label.trim() : undefined,
+            description: s.description || null,
+            country: s.country || countryFallbackMap[s.id] || "Узбекистан",
+          }));
+          setSpeakers(enriched);
+        }
+      })
+      .catch(() => {
+        // Fallback to speakersData already set
+      });
 
-  const filteredSpeakers = speakersData.filter((speaker) => {
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Extract unique countries
+  const countries = ["all", ...Array.from(new Set(speakers.map((s) => s.country).filter(Boolean)))];
+
+  const filteredSpeakers = speakers.filter((speaker) => {
     const matchesSearch =
       speaker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       speaker.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
