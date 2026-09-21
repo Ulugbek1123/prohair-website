@@ -1,0 +1,98 @@
+[
+  {
+    "id": 35,
+    "name": "Natural Aesthetic",
+    "image": "/uploads/1786426301457.png",
+    "type": "general"
+  },
+  {
+    "id": 9,
+    "name": "mesoestetic",
+    "image": "/uploads/1783393910766.PNG",
+    "type": "partner"
+  },
+  {
+    "id": 10,
+    "name": "arash Medical",
+    "image": "/uploads/1783393932418.png",
+    "type": "partner"
+  },
+  {
+    "id": 11,
+    "name": "MU LIN SEN",
+    "image": "/uploads/1783393936972.png",
+    "type": "partner"
+  },
+  {
+    "id": 13,
+    "name": "Bella-Systech Uzbekistan",
+    "image": "/uploads/1785388947345.png",
+    "type": "partner"
+  },
+  {
+    "id": 14,
+    "name": "REBEAUTY",
+    "image": "/uploads/1785388954651.png",
+    "type": "partner"
+  },
+  {
+    "id": 16,
+    "name": "sebamed",
+    "image": "/uploads/1785389044213.png",
+    "type": "partner"
+  },
+  {
+    "id": 19,
+    "name": "UMMED GROUP",
+    "image": "/uploads/1785389315339.png",
+    "type": "partner"
+  },
+  {
+    "id": 21,
+    "name": "ZandrA",
+    "image": "/uploads/1785397430421.png",
+    "type": "partner"
+  },
+  {
+    "id": 28,
+    "name": "TOMAS BEAUTY",
+    "image": "/uploads/1785414049865.png",
+    "type": "partner"
+  },
+  {
+    "id": 29,
+    "name": "Академия Трихологии Ткачева и Баруновой",
+    "image": "/uploads/1785414053509.png",
+    "type": "partner"
+  },
+  {
+    "id": 30,
+    "name": "MeZetta",
+    "image": "/uploads/1785835805552.png",
+    "type": "partner"
+  },
+  {
+    "id": 31,
+    "name": "РЕВИКСАН",
+    "image": "/uploads/1785841125220.png",
+    "type": "partner"
+  },
+  {
+    "id": 32,
+    "name": "t-lab",
+    "image": "/uploads/1785841129801.png",
+    "type": "partner"
+  },
+  {
+    "id": 36,
+    "name": "FOLLIMED",
+    "image": "/uploads/1787039870625.jpg",
+    "type": "partner"
+  },
+  {
+    "id": 37,
+    "name": "OK DOCTORS PHARMA",
+    "image": "/uploads/1787384662127.png",
+    "type": "partner"
+  }
+]
