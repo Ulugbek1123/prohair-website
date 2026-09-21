@@ -22,20 +22,13 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
-            echo "🚀 Deploy boshlandi..."
-            cd /home/golders-prohair/new-prohair || cd ~/new-prohair
-            
-            # Yangi kodni olish
-            git pull origin main
-            
-            # Yangi bog'liqliklarni o'rnatish
-            npm install --production=false
-            
-            # Frontend va SSR ni yig'ish (build)
-            npm run build
-            
-            # 5005-portda PM2 bilan serverni yangilash
-            PORT=5005 NITRO_PORT=5055 pm2 reload prohair-new || PORT=5005 NITRO_PORT=5055 pm2 start server.cjs --name "prohair-new"
-            pm2 save
-            
-            echo "✅ Deploy muvaffaqiyatli yakunlandi!"
+            echo "🔍 Server diagnostikasi boshlandi..."
+            echo "Joriy papka: $(pwd)"
+            echo "Mavjud papkalar:"
+            ls -la
+            export PATH=$PATH:/home/golders-prohair/.nvm/versions/node/v22.22.3/bin:~/.nvm/versions/node/v22.22.3/bin:~/.nvm/versions/node/$(ls ~/.nvm/versions/node 2>/dev/null | tail -n 1)/bin
+            echo "--- PM2 HOLATI ---"
+            pm2 list || true
+            echo "--- QIDIRUV ---"
+            find ~ -maxdepth 3 -name "server.cjs" 2>/dev/null || true
+            find ~ -maxdepth 3 -name "package.json" 2>/dev/null || true
