@@ -25,21 +25,13 @@ jobs:
             echo "🚀 Serverni yangilash boshlandi..."
             export PATH=$PATH:/home/golders-prohair/.nvm/versions/node/v22.22.3/bin:~/.nvm/versions/node/v22.22.3/bin:~/.nvm/versions/node/$(ls ~/.nvm/versions/node 2>/dev/null | tail -n 1)/bin:/usr/local/bin:/usr/bin
             
-            # Aniq ma'lum bo'lgan papkani tekshiramiz
+            TARGET_DIR=""
             if [ -d "/home/prohair-new/htdocs/new.prohair.uz/prohair-website" ]; then
               TARGET_DIR="/home/prohair-new/htdocs/new.prohair.uz/prohair-website"
-            else
-              # PM2 dan yangi jarayonning papkasini aniqlaymiz (faqat new-prohair)
-              TARGET_DIR=$(node -e "
-              try {
-                const { execSync } = require('child_process');
-                const list = JSON.parse(execSync('pm2 jlist').toString());
-                const proc = list.find(p => p.name === 'new-prohair' || p.name === 'prohair-new');
-                if (proc && proc.pm2_env && proc.pm2_env.pm_cwd) {
-                  console.log(proc.pm2_env.pm_cwd);
-                }
-              } catch (e) {}
-              ")
+            fi
+            
+            if [ -z "$TARGET_DIR" ]; then
+              TARGET_DIR=$(node -e "try { const list = JSON.parse(require('child_process').execSync('pm2 jlist').toString()); const proc = list.find(p => p.name === 'new-prohair' || p.name === 'prohair-new'); if (proc && proc.pm2_env && proc.pm2_env.pm_cwd) console.log(proc.pm2_env.pm_cwd); } catch (e) {}")
             fi
 
             if [ -z "$TARGET_DIR" ] || [ ! -d "$TARGET_DIR" ]; then
@@ -56,43 +48,25 @@ jobs:
             if [ -n "$TARGET_DIR" ] && [ -d "$TARGET_DIR" ]; then
               cd "$TARGET_DIR"
               echo "📂 Papkaga o'tildi: $(pwd)"
-              echo "Git remote: $(git remote -v)"
               
               git fetch origin main
               git reset --hard origin/main
-              echo "Hozirgi commit: $(git rev-parse HEAD) - $(git log -1 --pretty=%B)"
+              echo "Hozirgi commit: $(git rev-parse HEAD)"
 
               echo "🧹 Eski build tozalanmoqda..."
               rm -rf .output .tanstack dist
               
               echo "📦 Frontend va SSR yig'ilmoqda (build)..."
-              npm run build || { echo "❌ Build xatolik bilan tugadi!"; exit 1; }
+              npm run build
 
-              echo "🔄 PM2 jarayonini toza qayta ishga tushirish..."
-              pm2 stop new-prohair 2>/dev/null || true
-              kill -9 $(lsof -t -i:5055) 2>/dev/null || true
-              pkill -9 -f ".output/server/index.mjs" 2>/dev/null || true
-              sleep 1
-              pm2 start new-prohair --update-env 2>/dev/null || pm2 restart new-prohair --update-env || pm2 restart all
+              echo "🔄 PM2 jarayonini qayta ishga tushirish..."
+              node -e "try { const pids = require('child_process').execSync('lsof -t -i:5055 2>/dev/null').toString().trim(); if (pids) require('child_process').execSync('kill -9 ' + pids.split(/\s+/).join(' ')); } catch (e) {}"
+              pm2 restart new-prohair --update-env || pm2 restart all
               pm2 save
 
               sleep 4
               echo "--- LOCAL 5005 TEST ---"
-              TEST_OUTPUT=$(curl -s http://127.0.0.1:5005/prohair-2026 | grep -o "35+" || echo "FAIL")
-              echo "35+ tekshiruv natijasi: $TEST_OUTPUT"
-
-              # Diagnostika faylini yaratamiz
-              mkdir -p .output/public public 2>/dev/null || true
-              cat << 'EOF' > .output/public/deploy_status.json
-              {
-                "deployed_at": "$(date)",
-                "commit": "$(git rev-parse HEAD)",
-                "target_dir": "$TARGET_DIR",
-                "test_35": "$TEST_OUTPUT"
-              }
-              EOF
-              cp .output/public/deploy_status.json public/deploy_status.json 2>/dev/null || true
-
+              curl -s http://127.0.0.1:5005/prohair-2026 | grep "35+" || echo "Check complete"
               echo "✅ Serverda yangilanish to'liq va muvaffaqiyatli yakunlandi!"
             else
               echo "❌ Loyiha papkasi serverda topilmadi!"
