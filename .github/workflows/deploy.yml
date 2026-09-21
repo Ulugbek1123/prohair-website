@@ -59,10 +59,7 @@ jobs:
               echo "📦 Frontend va SSR yig'ilmoqda (build)..."
               npm run build
               
-              echo "🔄 Eski Nitro jarayonini to'xtatish va PM2 ni qayta ishga tushirish..."
-              fuser -k 5055/tcp || true
-              pkill -f ".output/server/index.mjs" || true
-              sleep 2
+              echo "🔄 PM2 qayta ishga tushirilmoqda..."
               pm2 restart new-prohair --update-env || pm2 restart all
               pm2 save
               echo "✅ Serverda yangilanish to'liq va muvaffaqiyatli yakunlandi!"
