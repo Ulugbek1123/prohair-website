@@ -52,6 +52,8 @@ jobs:
               git fetch origin main
               git reset --hard origin/main
               echo "Hozirgi commit: $(git rev-parse HEAD)"
+              git log -1 > public/git_commit.txt 2>&1 || true
+              head -n 100 src/lib/data.ts > public/head_data.txt 2>&1 || true
 
               echo "🧹 Eski build tozalanmoqda..."
               rm -rf .output .tanstack dist
