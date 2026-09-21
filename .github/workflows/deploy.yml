@@ -61,7 +61,8 @@ jobs:
               
               echo "🔄 PM2 qayta ishga tushirilmoqda..."
               pm2 restart new-prohair --update-env || pm2 restart all
-              pm2 save
+              sleep 3
+              pm2 logs new-prohair --nostream --lines 50
               echo "✅ Serverda yangilanish to'liq va muvaffaqiyatli yakunlandi!"
             else
               echo "❌ Loyiha papkasi serverda topilmadi!"
