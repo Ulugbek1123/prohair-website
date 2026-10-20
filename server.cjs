@@ -31,6 +31,29 @@ db.serialize(() => {
         status TEXT DEFAULT 'new'
     )`);
 
+    // PROHAIR 2027 kongressiga ro'yxatdan o'tish (narxli)
+    db.run(`CREATE TABLE IF NOT EXISTS registrations_2027 (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT,
+        full_name TEXT,
+        phone TEXT,
+        email TEXT,
+        country TEXT,
+        city TEXT,
+        specialty TEXT,
+        residency TEXT,
+        category TEXT,
+        period TEXT,
+        attend_day TEXT,
+        gala INTEGER DEFAULT 0,
+        ticket_usd INTEGER,
+        gala_usd INTEGER,
+        total_usd INTEGER,
+        total_uzs INTEGER,
+        comment TEXT,
+        status TEXT DEFAULT 'new'
+    )`);
+
     // Sayt tashriflari analitikasi
     db.run(`CREATE TABLE IF NOT EXISTS analytics_pageviews (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -353,9 +376,13 @@ app.post('/api/course-application', (req, res) => {
         `INSERT INTO course_applications (date, name, phone, email, course) VALUES (?, ?, ?, ?, ?)`,
         [date, name, phone, email || '', course || ''],
         (err) => {
-            if (err) console.error('Course DB Error:', err);
+            if (err) {
+                console.error('Course DB Error:', err);
+                return res.status(500).json({ success: false, message: 'Ошибка при сохранении заявки.' });
+            }
 
             const courseNames = {
+                'trichoscopy-2026': 'Авторский курс по трихоскопии — Т. Силюк (27–28.11.2026, Ташкент, $800)',
                 course: 'Практическая трихоскопия (Очный курс)',
                 webinar: 'Клинические разборы O‘zSTTA (Вебинар)',
                 lecture: 'Лекции по трихологии'
@@ -364,10 +391,10 @@ app.post('/api/course-application', (req, res) => {
 
             const tgMsg = `
 🎓 <b>ЯНГИ АРИЗА: ТАЪЛИМ / КУРС</b>
-👤 <b>Исм:</b> ${name}
-📞 <b>Телефон:</b> ${phone}
-📧 <b>Email:</b> ${email || '-'}
-📚 <b>Курс:</b> ${courseTitle}
+👤 <b>Исм:</b> ${escapeHtml(name)}
+📞 <b>Телефон:</b> ${escapeHtml(phone)}
+📧 <b>Email:</b> ${escapeHtml(email || '-')}
+📚 <b>Курс:</b> ${escapeHtml(courseTitle)}
 ⏰ <b>Вақт:</b> ${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' })}
 `;
             sendTelegramNotification(tgMsg);
@@ -596,6 +623,123 @@ app.post('/api/pre-register', (req, res) => {
     );
 });
 
+// 6b. PROHAIR 2027 kongressiga ro'yxatdan o'tish (narx serverda qayta hisoblanadi)
+const PRICING_2027 = require('./src/data/prohair-2027-pricing.json');
+const CATEGORY_LABELS_2027 = {
+    member: 'Член O‘zSTTA',
+    non_member: 'Не член O‘zSTTA',
+    one_day: 'Билет на 1 день',
+    student: 'Студент / Ординатор',
+    roiv: 'Член РОИВ'
+};
+const PERIOD_LABELS_2027 = { early: 'Ранняя', standard: 'Стандарт', late: 'Поздняя' };
+
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function quote2027({ residency, category, gala }) {
+    const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tashkent' }).format(new Date());
+    if (today > PRICING_2027.endDate) return { error: 'Регистрация на PROHAIR 2027 закрыта.' };
+    if (!['resident', 'non_resident'].includes(residency)) return { error: 'Неверный статус резидентства.' };
+
+    const periodIndex = PRICING_2027.periods.findIndex((p) => !p.until || today <= p.until);
+    const period = PRICING_2027.periods[periodIndex].id;
+
+    let ticket;
+    if (category === 'roiv') {
+        if (residency !== 'non_resident' || today > PRICING_2027.roiv.until) return { error: 'Тариф РОИВ недоступен.' };
+        ticket = PRICING_2027.roiv.price;
+    } else {
+        if (!['member', 'non_member', 'one_day', 'student'].includes(category)) return { error: 'Неверная категория билета.' };
+        const row = PRICING_2027.prices[residency][category];
+        ticket = row[periodIndex];
+    }
+
+    const galaDeadline = new Date(`${PRICING_2027.startDate}T00:00:00Z`);
+    galaDeadline.setUTCDate(galaDeadline.getUTCDate() - PRICING_2027.galaDinner.closesDaysBefore);
+    const galaOpen = today < galaDeadline.toISOString().slice(0, 10);
+    if (gala && !galaOpen) return { error: 'Бронирование гала-ужина закрыто.' };
+    const galaUsd = gala ? PRICING_2027.galaDinner.price : 0;
+
+    return { period, ticket, galaUsd, total: ticket + galaUsd };
+}
+
+app.post('/api/register-2027', (req, res) => {
+    const { fullName, phone, email, country, city, specialty, comment, residency, category, day, gala } = req.body || {};
+
+    if (!fullName || !phone || !email) {
+        return res.status(400).json({ success: false, message: 'Укажите Ф.И.О., телефон и email.' });
+    }
+
+    const q = quote2027({ residency, category, gala: Boolean(gala) });
+    if (q.error) return res.status(400).json({ success: false, message: q.error });
+
+    const attendDay = category === 'one_day'
+        ? ([PRICING_2027.startDate, PRICING_2027.endDate].includes(day) ? day : PRICING_2027.startDate)
+        : '';
+    const totalUzs = Math.round(q.total * (settings.dollarRate || 12100));
+    const residencyLabel = residency === 'resident' ? 'Резидент' : 'Нерезидент';
+
+    db.run(
+        `INSERT INTO registrations_2027 (date, full_name, phone, email, country, city, specialty, residency, category, period, attend_day, gala, ticket_usd, gala_usd, total_usd, total_uzs, comment, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'new')`,
+        [new Date().toISOString(), fullName, phone, email, country || '', city || '', specialty || '', residency, category, q.period, attendDay, q.galaUsd ? 1 : 0, q.ticket, q.galaUsd, q.total, totalUzs, comment || ''],
+        function (err) {
+            if (err) {
+                console.error('Register 2027 DB error:', err);
+                return res.status(500).json({ success: false, message: 'Ошибка при сохранении заявки.' });
+            }
+            const id = this.lastID;
+            const ticketLine = `${residencyLabel} · ${CATEGORY_LABELS_2027[category]} · ${PERIOD_LABELS_2027[q.period]}${attendDay ? ` · ${attendDay}` : ''}`;
+
+            sendTelegramNotification(`
+🎟 <b>PROHAIR 2027 — РЕГИСТРАЦИЯ #${id}</b>
+👤 <b>Исм:</b> ${escapeHtml(fullName)}
+📞 <b>Телефон:</b> ${escapeHtml(phone)}
+📧 <b>Email:</b> ${escapeHtml(email)}
+🌍 <b>Давлат:</b> ${escapeHtml(country || '-')} ${city ? '· ' + escapeHtml(city) : ''}
+🩺 <b>Мутахассислик:</b> ${escapeHtml(specialty || '-')}
+
+💳 <b>Билет:</b> ${escapeHtml(ticketLine)} — $${q.ticket}
+🍽 <b>Гала-ужин:</b> ${q.galaUsd ? '$' + q.galaUsd : 'йўқ'}
+💵 <b>Жами:</b> $${q.total} (≈ ${new Intl.NumberFormat('uz-UZ').format(totalUzs)} сўм)
+📝 <b>Изоҳ:</b> ${escapeHtml(comment || '-')}
+⏰ <b>Вақт:</b> ${new Date().toLocaleString('ru-RU', { timeZone: 'Asia/Tashkent' })}
+`);
+
+            transporter.sendMail({
+                from: '"PROHAIR CONGRESS" <info@prohair.uz>',
+                to: email,
+                subject: `Заявка #${id} принята — PROHAIR 2027`,
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; border: 1px solid #e0e5f2; border-radius: 16px; padding: 25px; background: #ffffff;">
+                        <h2 style="color: #2e1065; margin-top: 0;">Здравствуйте, ${escapeHtml(fullName)}!</h2>
+                        <p style="color: #444; line-height: 1.6;">
+                            Спасибо за регистрацию на <strong>III Международный конгресс PROHair 2027</strong>
+                            «Современная диагностика и терапия заболеваний волос» (11–12 сентября 2027, Ташкент).
+                        </p>
+                        <div style="background: #f5f3ff; padding: 15px; border-radius: 12px; margin: 20px 0;">
+                            <p style="margin: 5px 0;"><strong>Номер заявки:</strong> #${id}</p>
+                            <p style="margin: 5px 0;"><strong>Билет:</strong> ${escapeHtml(ticketLine)} — $${q.ticket}</p>
+                            ${q.galaUsd ? `<p style="margin: 5px 0;"><strong>Гала-ужин:</strong> $${q.galaUsd}</p>` : ''}
+                            <p style="margin: 5px 0;"><strong>Итого:</strong> $${q.total}</p>
+                        </div>
+                        <p style="color: #666; font-size: 14px; line-height: 1.6;">
+                            Оргкомитет свяжется с вами для подтверждения участия и оплаты. Возможна оплата на месте.
+                        </p>
+                        <p style="color: #999; font-size: 12px; margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px;">
+                            Оргкомитет: +998 90 175 74 07 | ilxom.raximov.1975@mail.ru | prohair.uz
+                        </p>
+                    </div>
+                `
+            }).catch((e) => console.error('Email confirmation error:', e.message));
+
+            res.json({ success: true, id, totalUsd: q.total, period: q.period });
+        }
+    );
+});
+
 // 7. Sayt tashriflarini qayd qilish (Analitika)
 app.post('/api/analytics/track', (req, res) => {
     const { path: pagePath, referrer, deviceType, browser, sessionId } = req.body;
@@ -678,14 +822,23 @@ app.get('/api/admin/applications', requireAdminAuth, (req, res) => {
         new Promise((resolve) => {
             db.all("SELECT id, date, name as full_name, phone, email, '' as country, 'Aloqa' as role, message as comment, '' as workplace, COALESCE(status, 'new') as status, 'contact' as type FROM contact_messages", (err, rows) => resolve(rows || []));
         }),
-        // 5. submissions (Kongress 2026)
+        // 5. registrations_2027 (PROHAIR 2027, narxli ro'yxatdan o'tish)
+        new Promise((resolve) => {
+            db.all(`SELECT id, date, full_name, phone, email, country, city as workplace,
+                    (CASE residency WHEN 'resident' THEN 'Резидент' ELSE 'Нерезидент' END) || ' · ' || category || ' · ' || period ||
+                    (CASE WHEN attend_day != '' THEN ' · ' || attend_day ELSE '' END) || (CASE WHEN gala = 1 THEN ' · + гала-ужин' ELSE '' END) as role,
+                    TRIM(COALESCE(specialty, '') || ' ' || COALESCE(comment, '')) as comment,
+                    total_usd as price_usd, total_uzs as price_uzs, COALESCE(status, 'new') as status, 'registration_2027' as type
+                    FROM registrations_2027`, (err, rows) => resolve(rows || []));
+        }),
+        // 6. submissions (Kongress 2026)
         new Promise((resolve) => {
             db.all("SELECT id, date, full_name, phone, email, country, subscription as role, comment, price_usd, price_uzs, COALESCE(status, 'new') as status, 'submission_2026' as type FROM submissions", (err, rows) => resolve(rows || []));
         })
     ];
 
-    Promise.all(queries).then(([preRegs, assoc, courses, contacts, subs]) => {
-        let all = [...preRegs, ...assoc, ...courses, ...contacts, ...subs];
+    Promise.all(queries).then(([preRegs, assoc, courses, contacts, regs2027, subs]) => {
+        let all = [...preRegs, ...assoc, ...courses, ...contacts, ...regs2027, ...subs];
 
         if (type && type !== 'all') {
             all = all.filter(item => item.type === type);
@@ -712,7 +865,8 @@ app.get('/api/admin/applications', requireAdminAuth, (req, res) => {
             success: true,
             total: all.length,
             counts: {
-                all: preRegs.length + assoc.length + courses.length + contacts.length + subs.length,
+                all: preRegs.length + assoc.length + courses.length + contacts.length + regs2027.length + subs.length,
+                registration_2027: regs2027.length,
                 pre_registration: preRegs.length,
                 association: assoc.length,
                 course: courses.length,
@@ -736,6 +890,7 @@ app.patch('/api/admin/applications/:type/:id/status', requireAdminAuth, (req, re
         association: 'association_members',
         course: 'course_applications',
         contact: 'contact_messages',
+        registration_2027: 'registrations_2027',
         submission_2026: 'submissions'
     };
 
@@ -755,6 +910,7 @@ app.delete('/api/admin/applications/:type/:id', requireAdminAuth, (req, res) => 
         association: 'association_members',
         course: 'course_applications',
         contact: 'contact_messages',
+        registration_2027: 'registrations_2027',
         submission_2026: 'submissions'
     };
 

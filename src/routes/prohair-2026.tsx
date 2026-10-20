@@ -2,11 +2,15 @@ import { Link, createFileRoute } from '@tanstack/react-router';
 import { ArrowUpRight, CalendarDays, MapPin, Users } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { useLanguage, pageMeta } from '../lib/language';
-import congressImage from '../assets/prohair-congress.jpg';
+import galleryManifest from '../data/gallery-2026.json';
 import { SpeakersSection } from '../components/speakers-section';
 import { ScheduleSection } from '../components/schedule-section';
 import { PartnersSection } from '../components/partners-section';
 import { FAQSection } from '../components/faq-section';
+import { Gallery2026 } from '../components/gallery-2026';
+
+// Asosiy rasm — kongressdagi umumiy guruh surati (galereyadan, siqilgan WebP)
+const heroPhoto = galleryManifest.items.find((p) => p.id === 'img_7190');
 
 export const Route = createFileRoute('/prohair-2026')({
   head: () =>
@@ -64,9 +68,15 @@ function Page() {
       <div className="mt-10 grid gap-10 lg:grid-cols-2 items-center">
         <div className="relative overflow-hidden rounded-2xl border border-border shadow-xl">
           <img
-            src={congressImage}
-            alt={t('Зал конгресса PROHAIR 2026', 'PROHAIR 2026 kongress zali', 'PROHAIR 2026 congress hall')}
+            src={String(heroPhoto?.srcs[1]?.[0] ?? '')}
+            srcSet={heroPhoto?.srcs.map(([src, w]) => `${src} ${w}w`).join(', ')}
+            sizes="(min-width: 1024px) 50vw, 100vw"
+            width={heroPhoto?.w}
+            height={heroPhoto?.h}
+            fetchPriority="high"
+            alt={t('Участники конгресса PROHAIR 2026 в Самарканде', 'Samarqanddagi PROHAIR 2026 kongressi ishtirokchilari', 'PROHAIR 2026 congress participants in Samarkand')}
             className="aspect-video w-full object-cover"
+            style={{ backgroundImage: `url(${heroPhoto?.blur})`, backgroundSize: 'cover' }}
           />
           <div className="absolute bottom-4 left-4 right-4 rounded-xl bg-background/80 p-3 backdrop-blur-md border border-border/50 text-xs">
             <span className="font-bold text-accent">Mövenpick Hotel Samarkand</span> · {t('Главная площадка события', 'Asosiy tadbir maydoni', 'Main venue')}
@@ -99,6 +109,9 @@ function Page() {
 
           <div className="mt-8 flex flex-wrap gap-4">
             <Button asChild variant="outline">
+              <a href="#gallery">{t('Фотогалерея', 'Fotogalereya', 'Photo gallery')}</a>
+            </Button>
+            <Button asChild variant="outline">
               <a href="#schedule">{t('Смотреть программу', 'Dasturni ko‘rish', 'View Program')}</a>
             </Button>
             <Button asChild variant="outline">
@@ -120,6 +133,9 @@ function Page() {
           </div>
         ))}
       </section>
+
+      {/* Fotogalereya */}
+      <Gallery2026 />
 
       {/* Full Speakers Component */}
       <SpeakersSection />

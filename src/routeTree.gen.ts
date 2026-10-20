@@ -17,6 +17,7 @@ import { Route as EducationRouteImport } from './routes/education'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as Prohair2026RouteImport } from './routes/prohair-2026'
 import { Route as Prohair2027RouteImport } from './routes/prohair-2027'
+import { Route as EducationTrichoscopyRouteImport } from './routes/education_.trichoscopy'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,6 +59,11 @@ const Prohair2027Route = Prohair2027RouteImport.update({
   path: '/prohair-2027',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EducationTrichoscopyRoute = EducationTrichoscopyRouteImport.update({
+  id: '/education_/trichoscopy',
+  path: '/education/trichoscopy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/events': typeof EventsRoute
   '/prohair-2026': typeof Prohair2026Route
   '/prohair-2027': typeof Prohair2027Route
+  '/education/trichoscopy': typeof EducationTrichoscopyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/events': typeof EventsRoute
   '/prohair-2026': typeof Prohair2026Route
   '/prohair-2027': typeof Prohair2027Route
+  '/education/trichoscopy': typeof EducationTrichoscopyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/events': typeof EventsRoute
   '/prohair-2026': typeof Prohair2026Route
   '/prohair-2027': typeof Prohair2027Route
+  '/education_/trichoscopy': typeof EducationTrichoscopyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/prohair-2026'
     | '/prohair-2027'
+    | '/education/trichoscopy'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/prohair-2026'
     | '/prohair-2027'
+    | '/education/trichoscopy'
   id:
     | '__root__'
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/prohair-2026'
     | '/prohair-2027'
+    | '/education_/trichoscopy'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +144,7 @@ export interface RootRouteChildren {
   EventsRoute: typeof EventsRoute
   Prohair2026Route: typeof Prohair2026Route
   Prohair2027Route: typeof Prohair2027Route
+  EducationTrichoscopyRoute: typeof EducationTrichoscopyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Prohair2027RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/education_/trichoscopy': {
+      id: '/education_/trichoscopy'
+      path: '/education/trichoscopy'
+      fullPath: '/education/trichoscopy'
+      preLoaderRoute: typeof EducationTrichoscopyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,6 +224,7 @@ const rootRouteChildren: RootRouteChildren = {
   EventsRoute: EventsRoute,
   Prohair2026Route: Prohair2026Route,
   Prohair2027Route: Prohair2027Route,
+  EducationTrichoscopyRoute: EducationTrichoscopyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

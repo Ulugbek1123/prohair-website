@@ -66,8 +66,8 @@ interface ApplicationItem {
   comment?: string;
   event?: string;
   status: 'new' | 'contacted' | 'confirmed' | 'cancelled';
-  type: 'pre_registration' | 'association' | 'course' | 'contact' | 'submission_2026';
-  price_usd?: string;
+  type: 'pre_registration' | 'association' | 'course' | 'contact' | 'registration_2027' | 'submission_2026';
+  price_usd?: string | number;
   price_uzs?: number;
 }
 
@@ -121,6 +121,7 @@ export function AdminPage() {
     association: 0,
     course: 0,
     contact: 0,
+    registration_2027: 0,
     submission_2026: 0,
   });
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -421,6 +422,12 @@ export function AdminPage() {
             <MessageSquare className="size-3" /> Qayta aloqa
           </span>
         );
+      case 'registration_2027':
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full border border-fuchsia-500/30 bg-fuchsia-500/10 px-2.5 py-0.5 text-xs font-semibold text-fuchsia-300">
+            <Sparkles className="size-3" /> 2027 Registratsiya
+          </span>
+        );
       case 'submission_2026':
         return (
           <span className="inline-flex items-center gap-1 rounded-full border border-zinc-500/30 bg-zinc-500/10 px-2.5 py-0.5 text-xs font-semibold text-zinc-400">
@@ -700,8 +707,8 @@ export function AdminPage() {
                     <Sparkles className="size-5" />
                   </div>
                 </div>
-                <p className="mt-3 font-serif text-3xl sm:text-4xl font-bold text-white">{counts.pre_registration}</p>
-                <p className="mt-1 text-xs text-slate-400">Dastlabki ro‘yxatdan o‘tganlar</p>
+                <p className="mt-3 font-serif text-3xl sm:text-4xl font-bold text-white">{counts.registration_2027}</p>
+                <p className="mt-1 text-xs text-slate-400">Ro‘yxatdan o‘tganlar · {counts.pre_registration} ta dastlabki</p>
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg backdrop-blur-sm">
@@ -771,7 +778,14 @@ export function AdminPage() {
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-white/5">
                       <span className="flex items-center gap-2">
-                        <Sparkles className="size-4 text-purple-400" /> PROHAIR 2027
+                        <Sparkles className="size-4 text-fuchsia-300" /> PROHAIR 2027 registratsiya
+                      </span>
+                      <span className="font-bold text-white">{counts.registration_2027}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-white/5">
+                      <span className="flex items-center gap-2">
+                        <Sparkles className="size-4 text-purple-400" /> PROHAIR 2027 dastlabki
                       </span>
                       <span className="font-bold text-white">{counts.pre_registration}</span>
                     </div>
@@ -884,7 +898,8 @@ export function AdminPage() {
               <div className="flex flex-wrap gap-2">
                 {[
                   { id: 'all', label: 'Barchasi', count: counts.all },
-                  { id: 'pre_registration', label: 'PROHAIR 2027', count: counts.pre_registration },
+                  { id: 'registration_2027', label: '2027 Registratsiya', count: counts.registration_2027 },
+                  { id: 'pre_registration', label: '2027 Dastlabki', count: counts.pre_registration },
                   { id: 'association', label: 'Assotsiatsiya', count: counts.association },
                   { id: 'course', label: 'Kurslar', count: counts.course },
                   { id: 'contact', label: 'Xabarlar', count: counts.contact },

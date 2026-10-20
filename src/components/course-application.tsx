@@ -3,6 +3,7 @@ import { z } from "zod";
 import { CheckCircle2, Loader2, Send } from "lucide-react";
 import { Button } from "./ui/button";
 import { useLanguage } from "../lib/language";
+import { apiUrl } from "../lib/api-client";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(100),
@@ -12,7 +13,7 @@ const schema = z.object({
   consent: z.literal(true),
 });
 
-export function CourseApplication({ course }: { course: string }) {
+export function CourseApplication({ course, intro, bare = false }: { course: string; intro?: string; bare?: boolean }) {
   const { t } = useLanguage();
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,21 +39,26 @@ export function CourseApplication({ course }: { course: string }) {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/course-application", {
+      const res = await fetch(apiUrl("/api/course-application"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(parsed.data),
       });
 
-      const resData = await res.json().catch(() => ({ success: true }));
-      if (res.ok || resData.success) {
+      const resData = await res.json().catch(() => null);
+      if (res.ok && resData?.success) {
         setIsSuccess(true);
       } else {
-        setError(resData.message || t("Ошибка отправки. Попробуйте еще раз.", "Xatolik yuz berdi. Qayta urinib ko‘ring.", "Submission error."));
+        setError(resData?.message || t("Ошибка отправки. Попробуйте еще раз.", "Xatolik yuz berdi. Qayta urinib ko‘ring.", "Submission error."));
       }
     } catch {
-      // Fallback to success for local test
-      setIsSuccess(true);
+      setError(
+        t(
+          "Нет связи с сервером. Проверьте интернет или позвоните нам: +998 77 300 30 80.",
+          "Server bilan aloqa yo‘q. Internetni tekshiring yoki qo‘ng‘iroq qiling: +998 77 300 30 80.",
+          "Cannot reach the server. Check your connection or call us: +998 77 300 30 80.",
+        ),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -79,16 +85,17 @@ export function CourseApplication({ course }: { course: string }) {
   }
 
   return (
-    <form onSubmit={submit} className="mt-6 space-y-4 border-t border-border pt-6">
+    <form onSubmit={submit} className={bare ? "space-y-4" : "mt-6 space-y-4 border-t border-border pt-6"}>
       <h3 className="text-lg font-bold">
         {t("Заявка на обучение", "Ta’lim uchun ariza", "Course Application")}
       </h3>
       <p className="text-xs leading-5 text-muted-foreground">
-        {t(
-          "Заполните форму, и мы свяжемся с вами сразу после подтверждения дат и программы.",
-          "Shaklni to‘ldiring, sanalar va dastur tasdiqlangach tashkilotchilar siz bilan bog‘lanadi.",
-          "Fill out the form and we will contact you once the dates and curriculum are confirmed."
-        )}
+        {intro ??
+          t(
+            "Заполните форму — координатор свяжется с вами для подтверждения участия и оплаты.",
+            "Shaklni to‘ldiring — koordinator ishtirok va to‘lovni tasdiqlash uchun siz bilan bog‘lanadi.",
+            "Fill out the form and our coordinator will contact you to confirm participation and payment."
+          )}
       </p>
 
       <label className="block text-xs font-semibold uppercase text-muted-foreground">

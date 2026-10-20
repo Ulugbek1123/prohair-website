@@ -18,6 +18,7 @@ import { AssociationBenefitsSection } from "../components/association-benefits-s
 import { PartnersSection } from "../components/partners-section";
 import { FAQSection } from "../components/faq-section";
 import { AssociationRegistrationModal } from "../components/association-registration-modal";
+import { TrichoscopyCourseCard } from "../components/trichoscopy-course-card";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -58,21 +59,13 @@ function Index() {
       eyebrow: t('Международный конгресс', 'Xalqaro kongress', 'International Congress'),
       title: t('PROHAIR 2027 в Ташкенте', 'PROHAIR 2027 Toshkentda', 'PROHAIR 2027 in Tashkent'),
       copy: t(
-        'Главное событие года: III Международный конгресс по трихологии и трансплантации волос. Открыта предварительная регистрация.',
-        'Yilning bosh tadbiri: Trixologiya va soch transplantatsiyasi bo‘yicha III Xalqaro kongress. Dastlabki ro‘yxatdan o‘tish ochildi.',
-        'The premier event of the year: III International Congress on Trichology & Hair Restoration. Pre-registration now open.'
+        '11–12 сентября 2027 · III Международный конгресс «Современная диагностика и терапия заболеваний волос». Открыта регистрация — ранняя цена до 30.04.',
+        '2027-yil 11–12-sentabr · «Soch kasalliklarining zamonaviy diagnostikasi va terapiyasi» III Xalqaro kongressi. Ro‘yxatdan o‘tish ochiq — erta narx 30.04 gacha.',
+        '11–12 September 2027 · III International Congress «Modern Diagnostics and Therapy of Hair Diseases». Registration open — early price until 30.04.'
       ),
       action: t('О конгрессе 2027', '2027 kongressi haqida', 'Explore PROHAIR 2027'),
       href: '/prohair-2027',
       kind: 'congress',
-    },
-    {
-      eyebrow: t('Непрерывное образование', 'Uzluksiz ta’lim', 'Continuing Education'),
-      title: t('Курсы и вебинары для специалистов', 'Mutaxassislar uchun kurs va vebinarlar', 'Courses and webinars for professionals'),
-      copy: t('Клинические разборы, лекции и практические занятия — онлайн и очно.', 'Klinik tahlillar, ma’ruzalar va amaliy mashg‘ulotlar — onlayn va oflayn.', 'Clinical discussions, lectures and practical sessions — online and in person.'),
-      action: t('Смотреть обучение', 'Ta’limni ko‘rish', 'Explore Education'),
-      href: '/education',
-      kind: 'education',
     },
   ] as const;
 
@@ -190,7 +183,7 @@ function Index() {
                   <ArrowRight />
                 </Button>
                 <span className="ml-2 font-serif text-xl text-primary-foreground">0{activeSlide + 1}</span>
-                <span className="text-xs text-primary-foreground/50">/ 03</span>
+                <span className="text-xs text-primary-foreground/50">/ 0{slides.length}</span>
               </div>
               <div className="flex gap-2" role="tablist" aria-label={t('Промо-слайды', 'Promo slaydlar', 'Promo slides')}>
                 {slides.map((item, index) => (
@@ -210,6 +203,13 @@ function Index() {
         </div>
       </section>
 
+      {/* Yaqin tadbir anonsi: trixoskopiya kursi */}
+      <section className="relative z-10 mx-auto max-w-7xl px-4 pb-20 sm:px-8">
+        <p className="section-kicker">{t('Ближайшее событие', 'Yaqin tadbir', 'Upcoming event')}</p>
+        <h2 className="section-title mt-4 mb-10">{t('Анонс курса', 'Kurs anonsi', 'Course announcement')}</h2>
+        <TrichoscopyCourseCard kicker={t('Регистрация открыта', 'Ro‘yxatdan o‘tish ochiq', 'Registration open')} />
+      </section>
+
       {/* 3 Main Pillars Section */}
       <section className="relative z-10 mx-auto max-w-7xl px-4 pb-20 sm:px-8">
         <p className="section-kicker">{t('Мир O‘zSTTA', 'O‘zSTTA olami', 'Discover O‘zSTTA')}</p>
@@ -217,8 +217,8 @@ function Index() {
         <div className="mt-10 grid gap-5 md:grid-cols-3">
           {([
             ["/association", t('Об ассоциации', 'Assotsiatsiya', 'Association'), t('Миссия, профессиональные стандарты и сообщество трихологов.', 'Missiya, kasbiy standartlar va trixologlar hamjamiyati.', 'Our mission, clinical standards and community.')],
-            ["/prohair-2027", t('Конгресс PROHAIR 2027', 'PROHAIR 2027 Kongressi', 'PROHAIR 2027 Congress'), t('III Международный конгресс в Ташкенте: программа, темы и предварительная бронь.', 'Toshkentdagi III Xalqaro kongress: dastur, mavzular va dastlabki bron.', 'III International Congress in Tashkent: program, topics and waitlist.')],
-            ["/education", t('Курсы и вебинары', 'Kurslar va vebinarlar', 'Courses and Webinars'), t('Клинические разборы, практическая трихоскопия и лекции.', 'Klinik tahlillar, amaliy trixoskopiya va ma’ruzalar.', 'Clinical discussions, trichoscopy practicums and lectures.')],
+            ["/prohair-2027", t('Конгресс PROHAIR 2027', 'PROHAIR 2027 Kongressi', 'PROHAIR 2027 Congress'), t('III Международный конгресс в Ташкенте, 11–12 сентября 2027: программа и регистрация.', 'Toshkentdagi III Xalqaro kongress, 2027-yil 11–12-sentabr: dastur va ro‘yxatdan o‘tish.', 'III International Congress in Tashkent, 11–12 September 2027: program and registration.')],
+            ["/education", t('Курсы и вебинары', 'Kurslar va vebinarlar', 'Courses and Webinars'), t('Авторский курс по трихоскопии — 27–28 ноября 2026.', 'Trixoskopiya mualliflik kursi — 2026-yil 27–28-noyabr.', 'Author’s trichoscopy course — 27–28 November 2026.')],
           ] as const).map(([to, title, copy]) => (
             <article key={to} className="event-card p-7 flex flex-col justify-between">
               <div>
@@ -287,7 +287,7 @@ function Index() {
                 className="absolute inset-0 h-full w-full object-cover"
               />
               <div className="absolute top-4 left-4 z-10 rounded-lg bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wider text-accent-foreground shadow">
-                {t('Ташкент · Дата уточняется', 'Toshkent · Sana aniqlanmoqda', 'Tashkent · Date to be announced')}
+                {t('11–12 сентября 2027 · Ташкент', '2027-yil 11–12-sentabr · Toshkent', '11–12 September 2027 · Tashkent')}
               </div>
             </div>
             <div className="flex flex-col justify-center">
@@ -297,9 +297,9 @@ function Index() {
               </h3>
               <p className="mt-4 leading-8 text-muted-foreground">
                 {t(
-                  'Следующий международный конгресс PROHAIR пройдёт в Ташкенте. Точные даты, площадка проведения, научная программа и условия участия будут опубликованы после утверждения оргкомитетом. Следите за обновлениями ассоциации O‘zSTTA.',
-                  'Navbatdagi PROHAIR xalqaro kongressi Toshkentda bo‘lib o‘tadi. Aniq sanalar, o‘tkazilish manzili, ilmiy dastur va ishtirok shartlari tashkiliy qo‘mita tomonidan tasdiqlangach e’lon qilinadi. O‘zSTTA assotsiatsiyasi yangiliklarini kuzatib boring.',
-                  'The next international PROHAIR congress will take place in Tashkent. Exact dates, venue, scientific agenda, and participation conditions will be announced once confirmed by the organizing committee. Stay tuned with O‘zSTTA.'
+                  'III Международный конгресс PROHAIR 2027 пройдёт 11–12 сентября 2027 года в Ташкенте. Главная тема — «Современная диагностика и терапия заболеваний волос». Открыта регистрация — ранняя цена до 30.04.',
+                  'III Xalqaro PROHAIR 2027 kongressi 2027-yil 11–12-sentabr kunlari Toshkentda bo‘lib o‘tadi. Bosh mavzu — «Soch kasalliklarining zamonaviy diagnostikasi va terapiyasi». Ro‘yxatdan o‘tish ochiq — erta narx 30.04 gacha.',
+                  'The III International PROHAIR 2027 Congress takes place on 11–12 September 2027 in Tashkent. Main theme: «Modern Diagnostics and Therapy of Hair Diseases». Registration is open — early price until 30.04.'
                 )}
               </p>
               <div className="mt-8 grid grid-cols-3 gap-4 border-y border-border py-6">
@@ -317,9 +317,9 @@ function Index() {
                 </div>
                 <div>
                   <p className="font-serif text-2xl sm:text-3xl font-bold text-accent">
-                    2027
+                    11–12
                   </p>
-                  <p className="mt-1 text-xs text-muted-foreground">{t('дата готовится', 'sana kutilmoqda', 'date TBA')}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t('сентября 2027', '2027-yil sentabr', 'September 2027')}</p>
                 </div>
               </div>
               <div className="mt-8 flex flex-wrap gap-4">

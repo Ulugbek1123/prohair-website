@@ -37,3 +37,6 @@ prohair_old.db
 public/*.txt
 public/*.html
 .output/
+
+# Asl (siqilmagan) rasmlar — saytda public/gallery dagi WebP nusxalar ishlatiladi
+Downloads/

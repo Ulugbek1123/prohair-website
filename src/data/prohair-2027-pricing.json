@@ -1,0 +1,33 @@
+{
+  "event": "PROHAIR 2027",
+  "startDate": "2027-09-11",
+  "endDate": "2027-09-12",
+  "currency": "USD",
+  "periods": [
+    { "id": "early", "until": "2027-04-30", "displayUntil": "2027-04-30" },
+    { "id": "standard", "until": "2027-08-19", "displayUntil": "2027-06-30" },
+    { "id": "late", "from": "2027-08-20" }
+  ],
+  "prices": {
+    "resident": {
+      "member": [100, 120, 150],
+      "non_member": [140, 160, 200],
+      "one_day": [75, 100, 120],
+      "student": [75, 100, 120]
+    },
+    "non_resident": {
+      "member": [250, 300, 350],
+      "non_member": [300, 350, 400],
+      "one_day": [150, 180, 200],
+      "student": [150, 180, 200]
+    }
+  },
+  "roiv": { "price": 350, "until": "2027-08-20" },
+  "galaDinner": { "price": 60, "closesDaysBefore": 5 },
+  "membership": {
+    "resident": 40,
+    "non_resident": 60,
+    "earlyDeadline": "2026-12-31",
+    "discountPercent": 10
+  }
+}

@@ -96,9 +96,9 @@ export function PreRegistrationModal({ isOpen, onClose, defaultRole }: PreRegist
             </h3>
             <p className="text-sm leading-6 text-muted-foreground max-w-md mx-auto">
               {t(
-                "Спасибо за интерес к PROHAIR 2027! Вы внесены в лист ожидания. Мы свяжемся с вами и отправим уведомление сразу после утверждения дат, программы и старта продаж билетов по льготным ценам Early Bird.",
-                "PROHAIR 2027 ga bo‘lgan qiziqishingiz uchun tashakkur! Siz kutish ro‘yxatiga kiritildingiz. Sanalar, dastur va Early Bird imtiyozli chiptalari sotuvi boshlanishi bilanoq siz bilan bog‘lanamiz.",
-                "Thank you for your interest in PROHAIR 2027! You are on our priority waitlist. We will notify you as soon as dates, agenda, and Early Bird registration open."
+                "Спасибо за интерес к PROHAIR 2027 (11–12 сентября 2027, Ташкент)! Вы внесены в лист ожидания. Мы свяжемся с вами сразу после публикации программы и старта продаж билетов по льготным ценам Early Bird.",
+                "PROHAIR 2027 (2027-yil 11–12-sentabr, Toshkent) ga bo‘lgan qiziqishingiz uchun tashakkur! Siz kutish ro‘yxatiga kiritildingiz. Dastur e’lon qilinishi va Early Bird imtiyozli chiptalari sotuvi boshlanishi bilanoq siz bilan bog‘lanamiz.",
+                "Thank you for your interest in PROHAIR 2027 (11–12 September 2027, Tashkent)! You are on our priority waitlist. We will contact you as soon as the agenda is published and Early Bird registration opens."
               )}
             </p>
             <div className="pt-4">
@@ -117,9 +117,9 @@ export function PreRegistrationModal({ isOpen, onClose, defaultRole }: PreRegist
             </h2>
             <p className="mt-2 text-xs text-muted-foreground leading-5">
               {t(
-                "Оставьте контакты, чтобы первыми узнать о датах, научной программе и получить скидку Early Bird на билеты.",
-                "Sanalar, ilmiy dastur va Early Bird chiptalari chegirmasidan birinchi bo‘lib xabardor bo‘lish uchun kontaktlaringizni qoldiring.",
-                "Leave your details to be first to hear about event dates, agenda, and Early Bird discounts."
+                "Оставьте контакты, чтобы первыми получить научную программу и скидку Early Bird на билеты.",
+                "Ilmiy dastur va Early Bird chiptalari chegirmasidan birinchi bo‘lib xabardor bo‘lish uchun kontaktlaringizni qoldiring.",
+                "Leave your details to be first to receive the agenda and Early Bird discounts."
               )}
             </p>
 

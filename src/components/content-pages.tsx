@@ -2,14 +2,13 @@ import { Link } from '@tanstack/react-router';
 import { useState, type FormEvent } from 'react';
 import { ArrowUpRight, Phone, Mail, MapPin, Send, CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
-import { CourseApplication } from './course-application';
 import { useLanguage } from '../lib/language';
 import congressImage from '../assets/prohair-congress.jpg';
+import { TrichoscopyCourseCard } from './trichoscopy-course-card';
 
 export function ContentPage({ kind }: { kind: 'association' | 'events' | 'education' | 'contacts' }) {
   const { t } = useLanguage();
   const [archive, setArchive] = useState(true);
-  const [selected, setSelected] = useState<string | null>(null);
 
   // Contact form state
   const [contactSubmitting, setContactSubmitting] = useState(false);
@@ -29,29 +28,6 @@ export function ContentPage({ kind }: { kind: 'association' | 'events' | 'educat
     education: t('Развитие профессиональных знаний: от теории до обсуждения клинической практики.', 'Kasbiy bilimlarni rivojlantirish: nazariyadan klinik amaliyot muhokamasigacha.', 'Professional learning, from theory to discussions of clinical practice.'),
     contacts: t('Обучение, участие в мероприятиях, членство и сотрудничество.', 'Ta’lim, tadbirlarda ishtirok, a’zolik va hamkorlik.', 'Education, event participation, membership and partnerships.'),
   };
-
-  const pending = t('Дата уточняется', 'Sana aniqlanmoqda', 'Date to be announced');
-
-  const courses = [
-    {
-      id: 'course',
-      title: t('Практическая трихоскопия', 'Amaliy trixoskopiya', 'Practical trichoscopy'),
-      format: t('Курс · очно', 'Kurs · oflayn', 'Course · in person'),
-      copy: t('Основы осмотра волос и кожи головы, знакомство с трихоскопическими признаками и обсуждение диагностического подхода.', 'Soch va bosh terisini tekshirish asoslari, trixoskopik belgilar bilan tanishish va diagnostik yondashuvlarni muhokama qilish.', 'Hair and scalp examination fundamentals, trichoscopic signs and discussion of diagnostic approaches.'),
-    },
-    {
-      id: 'webinar',
-      title: t('Клинические разборы O‘zSTTA', 'O‘zSTTA klinik tahlillari', 'O‘zSTTA clinical discussions'),
-      format: t('Вебинар · онлайн', 'Vebinar · onlayn', 'Webinar · online'),
-      copy: t('Обсуждение клинических случаев, подходов к обследованию и вопросов повседневной практики. Возможность задать вопросы и обменяться опытом.', 'Klinik holatlar, tekshiruv yondashuvlari va kundalik amaliyot savollarini muhokama qilish. Savol berish va tajriba almashish imkoniyati.', 'Case discussions, examination approaches and everyday practice questions, with opportunities to share experience.'),
-    },
-    {
-      id: 'lecture',
-      title: t('Лекции по трихологии', 'Trixologiya ma’ruzalari', 'Trichology lectures'),
-      format: t('Лекции · формат уточняется', 'Ma’ruzalar · format aniqlanmoqda', 'Lectures · format to be confirmed'),
-      copy: t('Тематические встречи о здоровье волос и кожи головы, научных подходах и профессиональном развитии.', 'Soch va bosh terisi salomatligi, ilmiy yondashuvlar va kasbiy rivojlanish bo‘yicha mavzuli uchrashuvlar.', 'Focused sessions on hair and scalp health, scientific approaches and professional development.'),
-    },
-  ];
 
   async function handleContactSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -159,35 +135,15 @@ export function ContentPage({ kind }: { kind: 'association' | 'events' | 'educat
       {/* EDUCATION PAGE */}
       {kind === 'education' && (
         <section className="py-12">
-          <p className="mb-8 border-l-2 border-accent pl-4 text-sm leading-7 text-muted-foreground">
+          <TrichoscopyCourseCard />
+
+          <p className="mt-8 border-l-2 border-accent pl-4 text-sm leading-7 text-muted-foreground">
             {t(
-              'Предварительные описания программ. Даты, стоимость, продолжительность и преподаватели будут объявлены после подтверждения.',
-              'Dasturlarning dastlabki tavsiflari. Sana, narx, davomiylik va o‘qituvchilar tasdiqlangach e’lon qilinadi.',
-              'Preliminary program descriptions. Dates, fees, duration and instructors will be announced once confirmed.'
+              'Новые курсы и вебинары O‘zSTTA появятся здесь — следите за анонсами ассоциации.',
+              'O‘zSTTA ning yangi kurs va vebinarlari shu yerda e’lon qilinadi — assotsiatsiya yangiliklarini kuzatib boring.',
+              'New O‘zSTTA courses and webinars will be announced here — follow the association’s updates.'
             )}
           </p>
-          <div className="grid items-start gap-6 lg:grid-cols-3">
-            {courses.map((c) => (
-              <article key={c.id} className="event-card p-6">
-                <p className="section-kicker">{c.format}</p>
-                <h2 className="mt-4 font-serif text-2xl sm:text-3xl font-bold">{c.title}</h2>
-                <p className="mt-4 leading-7 text-muted-foreground text-sm">{c.copy}</p>
-                <p className="mt-6 text-xs font-semibold text-accent">{pending}</p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {t('Для специалистов по трихологии и дерматологии.', 'Trixologiya va dermatologiya mutaxassislari uchun.', 'For trichology and dermatology professionals.')}
-                </p>
-                <Button
-                  className="mt-6 w-full"
-                  variant={selected === c.id ? 'secondary' : 'default'}
-                  onClick={() => setSelected(selected === c.id ? null : c.id)}
-                  aria-expanded={selected === c.id}
-                >
-                  {selected === c.id ? t('Закрыть', 'Yopish', 'Close') : t('Подать заявку', 'Ariza berish', 'Apply')}
-                </Button>
-                {selected === c.id && <CourseApplication key={c.id} course={c.id} />}
-              </article>
-            ))}
-          </div>
         </section>
       )}
 
@@ -231,14 +187,14 @@ export function ContentPage({ kind }: { kind: 'association' | 'events' | 'educat
                 PROHAIR {archive ? '2027' : '2026'}
               </h2>
               <p className="mt-3 font-semibold text-accent">
-                {archive ? t('Ташкент · Дата уточняется', 'Toshkent · Sana aniqlanmoqda', 'Tashkent · Date to be announced') : t('4–5 сентября 2026 · Самарканд, Mövenpick Hotel', '2026-yil 4–5-sentabr · Samarqand, Mövenpick Hotel', '4–5 September 2026 · Samarkand, Mövenpick Hotel')}
+                {archive ? t('11–12 сентября 2027 · Ташкент', '2027-yil 11–12-sentabr · Toshkent', '11–12 September 2027 · Tashkent') : t('4–5 сентября 2026 · Самарканд, Mövenpick Hotel', '2026-yil 4–5-sentabr · Samarqand, Mövenpick Hotel', '4–5 September 2026 · Samarkand, Mövenpick Hotel')}
               </p>
               <p className="mt-4 leading-8 text-muted-foreground text-sm sm:text-base">
                 {archive
                   ? t(
-                      'Следующий международный конгресс PROHAIR пройдёт в Ташкенте. Точные даты, площадка, научная программа и условия участия будут опубликованы после подтверждения оргкомитетом.',
-                      'Navbatdagi PROHAIR xalqaro kongressi Toshkentda bo‘lib o‘tadi. Aniq sanalar, manzil, ilmiy dastur va ishtirok shartlari tashkiliy qo‘mita tomonidan tasdiqlangach e’lon qilinadi.',
-                      'The next international PROHAIR congress will take place in Tashkent. Exact dates, venue and agenda will be announced after committee confirmation.'
+                      'III Международный конгресс PROHAIR 2027 «Современная диагностика и терапия заболеваний волос» пройдёт 11–12 сентября 2027 года в Ташкенте. Площадка и научная программа будут объявлены дополнительно.',
+                      '«Soch kasalliklarining zamonaviy diagnostikasi va terapiyasi» III Xalqaro PROHAIR 2027 kongressi 2027-yil 11–12-sentabr kunlari Toshkentda bo‘lib o‘tadi. O‘tkazilish joyi va ilmiy dastur qo‘shimcha e’lon qilinadi.',
+                      'The III International PROHAIR 2027 Congress «Modern Diagnostics and Therapy of Hair Diseases» takes place on 11–12 September 2027 in Tashkent. Venue and scientific program will be announced later.'
                     )
                   : t(
                       'II Международный конгресс по трихологии и трансплантации волос: 24+ ведущих международных спикеров, 2 дня интенсивной научной программы, мастер-классы и выставка передовых препаратов.',

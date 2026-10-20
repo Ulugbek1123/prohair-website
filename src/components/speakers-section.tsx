@@ -1,8 +1,43 @@
-import { useState, useEffect } from "react";
-import { Globe, Search, UserCheck } from "lucide-react";
+import { useState, useEffect, useRef, type SyntheticEvent } from "react";
+import { ChevronLeft, ChevronRight, Globe, Search } from "lucide-react";
 import { useLanguage } from "../lib/language";
 import { speakersData, type Speaker } from "../lib/data";
 import { apiUrl } from "../lib/api-client";
+
+// 12 — 2, 3 va 4 ustunli setkalarga teng bo'linadi (oxirgi qator chala qolmaydi)
+const PAGE_SIZE = 12;
+
+// /uploads/xxx.png -> /uploads/thumbs/xxx.webp (600px, siqilgan nusxa).
+// Admin keyin yuklagan rasmlarda nusxa bo'lmasa, onError aslini ko'rsatadi.
+function speakerThumb(src: string): string {
+  const m = /^\/uploads\/([^/]+)\.(png|jpe?g|webp)$/i.exec(src);
+  return m ? `/uploads/thumbs/${m[1]}.webp` : src;
+}
+
+function handleImgError(original: string) {
+  return (e: SyntheticEvent<HTMLImageElement>) => {
+    const img = e.currentTarget;
+    if (img.dataset["fallback"] === "original") {
+      img.src = "/favicon.ico";
+      img.dataset["fallback"] = "done";
+    } else if (!img.dataset["fallback"]) {
+      img.dataset["fallback"] = "original";
+      img.src = original;
+    }
+  };
+}
+
+function pageList(current: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages: (number | "…")[] = [1];
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  if (start > 2) pages.push("…");
+  for (let i = start; i <= end; i++) pages.push(i);
+  if (end < total - 1) pages.push("…");
+  pages.push(total);
+  return pages;
+}
 
 export function SpeakersSection() {
   const { t } = useLanguage();
@@ -10,6 +45,8 @@ export function SpeakersSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<string>("all");
   const [selectedSpeaker, setSelectedSpeaker] = useState<Speaker | null>(null);
+  const [page, setPage] = useState(1);
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -58,8 +95,20 @@ export function SpeakersSection() {
     return matchesSearch && matchesCountry;
   });
 
+  const totalPages = Math.max(1, Math.ceil(filteredSpeakers.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageSpeakers = filteredSpeakers.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  // Qidiruv yoki davlat o'zgarsa — birinchi sahifaga qaytamiz
+  useEffect(() => setPage(1), [searchQuery, selectedCountry]);
+
+  const goToPage = (next: number) => {
+    setPage(next);
+    sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
-    <section id="speakers" className="relative z-10 py-16 sm:py-24 border-t border-border">
+    <section ref={sectionRef} id="speakers" className="relative z-10 scroll-mt-24 py-16 sm:py-24 border-t border-border">
       <div className="mx-auto max-w-7xl px-4 sm:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
@@ -104,7 +153,7 @@ export function SpeakersSection() {
         </div>
 
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {filteredSpeakers.map((speaker) => (
+          {pageSpeakers.map((speaker) => (
             <article
               key={speaker.id}
               onClick={() => setSelectedSpeaker(speaker)}
@@ -112,14 +161,14 @@ export function SpeakersSection() {
             >
               <div className="relative aspect-[4/5] w-full overflow-hidden bg-muted">
                 <img
-                  src={speaker.image}
+                  src={speakerThumb(speaker.image)}
                   alt={speaker.name}
                   loading="lazy"
+                  decoding="async"
+                  width={600}
+                  height={750}
                   className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                  onError={(e) => {
-                    // Fallback to placeholder if upload image not yet copied
-                    (e.currentTarget as HTMLImageElement).src = "/favicon.ico";
-                  }}
+                  onError={handleImgError(speaker.image)}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity" />
 
@@ -156,6 +205,57 @@ export function SpeakersSection() {
           ))}
         </div>
 
+        {totalPages > 1 && (
+          <nav
+            className="mt-10 flex flex-col items-center justify-between gap-4 sm:flex-row"
+            aria-label={t("Страницы спикеров", "Spikerlar sahifalari", "Speaker pages")}
+          >
+            <p className="text-xs text-muted-foreground">
+              {t("Показано", "Ko‘rsatilmoqda", "Showing")}{" "}
+              <b className="text-foreground">
+                {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filteredSpeakers.length)}
+              </b>{" "}
+              {t("из", "/", "of")} <b className="text-foreground">{filteredSpeakers.length}</b>
+            </p>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="flex size-10 items-center justify-center rounded-lg border border-border bg-card text-foreground transition hover:border-accent disabled:pointer-events-none disabled:opacity-40"
+                aria-label={t("Предыдущая страница", "Oldingi sahifa", "Previous page")}
+              >
+                <ChevronLeft className="size-4" />
+              </button>
+              {pageList(currentPage, totalPages).map((p, i) =>
+                p === "…" ? (
+                  <span key={`gap${i}`} className="px-1 text-muted-foreground">…</span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => goToPage(p)}
+                    aria-current={p === currentPage ? "page" : undefined}
+                    className={`size-10 rounded-lg text-sm font-semibold transition ${
+                      p === currentPage
+                        ? "bg-primary text-primary-foreground shadow"
+                        : "border border-border bg-card text-foreground hover:border-accent"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ),
+              )}
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="flex size-10 items-center justify-center rounded-lg border border-border bg-card text-foreground transition hover:border-accent disabled:pointer-events-none disabled:opacity-40"
+                aria-label={t("Следующая страница", "Keyingi sahifa", "Next page")}
+              >
+                <ChevronRight className="size-4" />
+              </button>
+            </div>
+          </nav>
+        )}
+
         {filteredSpeakers.length === 0 && (
           <div className="py-16 text-center text-muted-foreground text-sm">
             {t("Спикеры не найдены.", "Spikerlar topilmadi.", "No speakers found.")}
@@ -181,7 +281,8 @@ export function SpeakersSection() {
 
               <div className="flex gap-5 items-start">
                 <img
-                  src={selectedSpeaker.image}
+                  src={speakerThumb(selectedSpeaker.image)}
+                  onError={handleImgError(selectedSpeaker.image)}
                   alt={selectedSpeaker.name}
                   className="size-24 sm:size-28 rounded-xl object-cover shrink-0 border border-border"
                 />
